@@ -39,7 +39,7 @@
 }
 
 * { box-sizing: border-box; }
-html, body { height: 100%; margin: 0; }
+html, body { height: 100%; margin: 0; overflow: hidden; }
 
 body {
   font-family: "Readex Pro", "Segoe UI", Tahoma, sans-serif;
@@ -69,6 +69,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
   height: 100%;
   display: grid;
   grid-template-rows: auto auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr);
   justify-items: center;
   padding: calc(var(--u) * 2.6) calc(var(--u) * 4) calc(var(--u) * 1.8);
   overflow: hidden;
@@ -249,13 +250,79 @@ button { font: inherit; color: inherit; cursor: pointer; }
   width: 100%;
   position: relative;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
+  gap: calc(var(--u) * 2);
   min-height: calc(var(--u) * 5.6);
 }
+.bottom > .usb { margin-inline-start: auto; }
+
+/* open programs: tablet-style "recent apps" cards */
+.running { flex: 1 1 auto; display: flex; align-items: center; gap: calc(var(--u) * 1.2); min-width: 0; overflow: hidden; }
+.running-label { flex: none; font-size: calc(var(--u) * 1.7); color: var(--soft); text-shadow: var(--shadow-text); }
+.running-list { flex: 1 1 auto; display: flex; align-items: center; gap: calc(var(--u) * 1); min-width: 0; }
+.bottom > .usb { flex: none; }
+/* with open programs showing, the USB bar keeps only its icon and button */
+.bottom.both .usb-text { display: none; }
+.bottom.both .usb { padding-inline-start: calc(var(--u) * 1.4); }
+.run {
+  flex: 0 1 auto;
+  min-width: calc(var(--u) * 14);
+  display: flex;
+  align-items: center;
+  height: calc(var(--u) * 5.6);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .2);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, .28);
+  box-shadow: 0 calc(var(--u) * .4) calc(var(--u) * 1.6) rgba(6, 22, 34, .22);
+  transition: opacity .2s ease, transform .2s ease;
+}
+.run.closing { opacity: .4; transform: scale(.95); }
+.run-go {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * .9);
+  height: 100%;
+  padding-inline: calc(var(--u) * .7) calc(var(--u) * 1.4);
+  border: 0;
+  background: none;
+  min-width: 0;
+}
+.run-go img, .run-glyph {
+  flex: none;
+  width: calc(var(--u) * 3.6);
+  height: calc(var(--u) * 3.6);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .92);
+  padding: calc(var(--u) * .5);
+  object-fit: contain;
+  color: #17324A;
+}
+.run-title {
+  min-width: 0;
+  max-width: calc(var(--u) * 17);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: calc(var(--u) * 1.75);
+  font-weight: 500;
+  text-shadow: var(--shadow-text);
+}
+.run-x {
+  flex: none;
+  width: calc(var(--u) * 4.4);
+  height: calc(var(--u) * 4.4);
+  margin-inline-end: calc(var(--u) * .6);
+  padding: calc(var(--u) * 1.1);
+  border: 0;
+  border-radius: 50%;
+  background: rgba(6, 22, 34, .35);
+}
+.run-x:active, .run-go:active { opacity: .7; }
+.run-more { font-size: calc(var(--u) * 1.8); font-weight: 500; text-shadow: var(--shadow-text); }
 .room {
-  position: absolute;
-  inset-inline-end: 0;
+  margin-inline-start: auto;
   margin: 0;
   font-size: calc(var(--u) * 1.8);
   color: var(--soft);
@@ -412,7 +479,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 
 /* narrow or portrait screens */
 @media (max-aspect-ratio: 4/3) {
-  body { overflow: auto; }
+  html, body { overflow: auto; }
   .home { height: auto; min-height: 100%; }
   .grid { grid-template-columns: repeat(3, var(--cell)); }
   .app.hero { grid-column: 1 / -1; grid-row: auto; }

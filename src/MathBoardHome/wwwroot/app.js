@@ -172,19 +172,79 @@
   // ---------------------------------------------------------------- USB
   function renderUsb(added) {
     const bar = $("usbBar");
-    if (!drives.length) { bar.hidden = true; return; }
+    if (!drives.length) { bar.hidden = true; updateFooter(); return; }
     const d = drives[drives.length - 1];
     const label = d.label ? `«${d.label}»` : "";
     $("usbText").textContent = drives.length > 1
       ? `${drives.length} فلاشات موصولة`
       : `فلاشة ${label} موصولة \u2066(${d.root.replace(/\\$/, "")})\u2069`.replace(/\s+/g, " ");
     bar.hidden = false;
+    updateFooter();
     if (added) { bar.classList.remove("arrived"); void bar.offsetWidth; bar.classList.add("arrived"); }
   }
   $("usbOpen").addEventListener("click", () => {
     const usb = (config.apps || []).find((a) => a.type === "usb");
     if (usb) activate(usb); else send({ cmd: "launch", id: "usb" });
   });
+
+  // ---------------------------------------------------------------- open programs (tablet-style "recent apps")
+  const MAX_RUNNING = 4;
+  function renderRunning(list) {
+    const box = $("runningList");
+    box.textContent = "";
+    const shown = list.slice(0, MAX_RUNNING);
+    shown.forEach((w) => {
+      const card = document.createElement("div");
+      card.className = "run";
+
+      const go = document.createElement("button");
+      go.type = "button";
+      go.className = "run-go";
+      go.setAttribute("aria-label", `الرجوع إلى ${w.title}`);
+      if (w.icon) {
+        const img = document.createElement("img");
+        img.src = w.icon;
+        img.alt = "";
+        go.appendChild(img);
+      } else {
+        const ic = document.createElement("span");
+        ic.className = "run-glyph";
+        ic.dataset.icon = "presentation";
+        go.appendChild(ic);
+      }
+      const t = document.createElement("span");
+      t.className = "run-title";
+      t.textContent = w.title.split(/\s[-–—|]\s/)[0] || w.title; // "Lesson.pptx - PowerPoint" -> "Lesson.pptx"
+      go.appendChild(t);
+      go.addEventListener("click", () => send({ cmd: "switch", id: w.id }));
+
+      const x = document.createElement("button");
+      x.type = "button";
+      x.className = "run-x";
+      x.setAttribute("aria-label", `إغلاق ${w.title}`);
+      x.dataset.icon = "x";
+      x.addEventListener("click", () => {
+        card.classList.add("closing");
+        send({ cmd: "closeWindow", id: w.id });
+      });
+
+      card.append(go, x);
+      box.appendChild(card);
+    });
+    if (list.length > MAX_RUNNING) {
+      const more = document.createElement("span");
+      more.className = "run-more";
+      more.textContent = `+${list.length - MAX_RUNNING}`;
+      box.appendChild(more);
+    }
+    paintIcons(box);
+    $("running").hidden = list.length === 0;
+    updateFooter();
+  }
+  function updateFooter() {
+    $("roomTitle").hidden = !$("running").hidden || !$("usbBar").hidden;
+    document.querySelector(".bottom").classList.toggle("both", !$("running").hidden && !$("usbBar").hidden);
+  }
 
   // ---------------------------------------------------------------- supervisor (hold the clock 3 s)
   const clock = $("clock");
@@ -299,6 +359,7 @@
         renderGrid();
         renderUsb(false);
         tickClock();
+        send({ cmd: "windows" });
         if (msg.error) toast("ملف الإعدادات فيه خطأ، أبلغي مشرفة الغرفة.", "warn", 8000);
         break;
       case "drives":
@@ -307,6 +368,7 @@
         if ((msg.added || []).length && msg.opened) toast("وُصلت فلاشة، فتحتُ ملفاتها لك");
         break;
       case "result": onResult(msg); break;
+      case "windows": renderRunning(msg.windows || []); break;
       case "unlock": onUnlock(!!msg.ok); break;
       case "locked": hide("adminLayer"); break;
     }
@@ -325,5 +387,6 @@
   } else if (window.__previewConfig) {
     // design preview outside Windows
     onMessage({ type: "config", config: window.__previewConfig, drives: window.__previewDrives || [] });
+    if (window.__previewWindows) onMessage({ type: "windows", windows: window.__previewWindows });
   }
 })();

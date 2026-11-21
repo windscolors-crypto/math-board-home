@@ -3,7 +3,12 @@
 
   "title": "غرفة الرياضيات",
   "adminPin": "2468",
-  "coverTaskbar": false,
+  "coverTaskbar": true,
+  "hideTaskbar": true,
+  "homeButton": true,
+  "homeButtonPosition": "bottom-left",
+  "homeButtonSize": 76,
+  "_home_note": "زر الرئيسية العائم يظهر فوق البرامج. مكانه: bottom-left أو bottom-right أو bottom-center أو middle-left أو middle-right. hideTaskbar يخفي شريط مهام ويندوز تلقائياً.",
   "usbAutoOpen": true,
   "digits": "arab",
   "searchUrl": "https://www.google.com/search?q=",

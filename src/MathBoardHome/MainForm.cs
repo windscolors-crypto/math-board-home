@@ -31,6 +31,10 @@ namespace MathBoardHome
         private bool _adminUnlocked;
         private DateTime _lastLaunch = DateTime.MinValue;
         private string _lastLaunchId;
+        private readonly Timer _windowsPoll = new Timer { Interval = 1500 };
+        private List<WindowTracker.OpenWindow> _openWindows = new List<WindowTracker.OpenWindow>();
+        private string _lastWindowsJson = "";
+        private HomeButton _home;
 
         public int ExitCode { get; private set; }
 
@@ -61,6 +65,81 @@ namespace MathBoardHome
 
             _knownDrives = new HashSet<string>(Launcher.RemovableDrives().Select(d => d.Name), StringComparer.OrdinalIgnoreCase);
             _usbPoll.Start();
+
+            // Tablet-style switching: a floating home button over other programs, and the list
+            // of open programs shown on the home screen while it is in front.
+            ApplyShell();
+            _windowsPoll.Tick += (s, e) => SendWindows(force: false);
+            Activated += (s, e) =>
+            {
+                _home?.Hide();
+                SendWindows(force: true);
+                _windowsPoll.Start();
+            };
+            Deactivate += (s, e) =>
+            {
+                _windowsPoll.Stop();
+                if (_home != null && !_allowClose) _home.Show();
+            };
+            FormClosed += (s, e) =>
+            {
+                Taskbar.Restore();
+                _home?.Close();
+            };
+        }
+
+        private void ApplyShell()
+        {
+            if (_config.GetBool("hideTaskbar", true)) Taskbar.AutoHide(true); else Taskbar.Restore();
+
+            bool wantHome = _config.GetBool("homeButton", true);
+            if (wantHome && _home == null)
+            {
+                int size = 76;
+                if (_config.Root.TryGetValue("homeButtonSize", out object v) && v is int n) size = n;
+                _home = new HomeButton(BringHome, _config.GetString("homeButtonPosition", "bottom-left"), size);
+                _home.CreateControl();
+            }
+            else if (!wantHome && _home != null)
+            {
+                _home.Close();
+                _home = null;
+            }
+        }
+
+        /// <summary>Brings the home screen in front of every program (the programs stay open).</summary>
+        private void BringHome()
+        {
+            if (WindowState == FormWindowState.Minimized) WindowState = FormWindowState.Normal;
+            Show();
+            TopMost = true;   // reliably wins the foreground, then drop back
+            TopMost = false;
+            Activate();
+            WindowTracker.SetForegroundWindow(Handle);
+        }
+
+        private void SendWindows(bool force)
+        {
+            var own = new List<IntPtr> { Handle };
+            if (_home != null) own.Add(_home.Handle);
+            _openWindows = WindowTracker.List(own);
+            var list = _openWindows.Select(w => (object)new Dictionary<string, object>
+            {
+                ["id"] = w.Handle.ToInt64().ToString(),
+                ["title"] = w.Title,
+                ["icon"] = WindowTracker.IconDataUrl(w.Exe),
+            }).ToArray();
+            string json = AppConfig.Json.Serialize(list);
+            if (!force && json == _lastWindowsJson) return;
+            _lastWindowsJson = json;
+            Send(new { type = "windows", windows = list });
+        }
+
+        private IntPtr KnownWindow(string id)
+        {
+            if (!long.TryParse(id, out long value)) return IntPtr.Zero;
+            var hit = _openWindows.FirstOrDefault(w => w.Handle.ToInt64() == value);
+            return hit?.Handle ?? IntPtr.Zero;
         }
 
         private void ApplyBounds()
@@ -178,6 +257,19 @@ namespace MathBoardHome
                     case "unlock": Unlock(AppConfig.Str(msg, "pin")); break;
                     case "lock": _adminUnlocked = false; _adminTimeout.Stop(); break;
                     case "admin": Admin(AppConfig.Str(msg, "action")); break;
+                    case "windows": SendWindows(force: true); break;
+                    case "switch":
+                        {
+                            IntPtr h = KnownWindow(AppConfig.Str(msg, "id"));
+                            if (h != IntPtr.Zero) WindowTracker.SwitchTo(h);
+                            break;
+                        }
+                    case "closeWindow":
+                        {
+                            IntPtr h = KnownWindow(AppConfig.Str(msg, "id"));
+                            if (h != IntPtr.Zero) WindowTracker.Close(h);
+                            break;
+                        }
                 }
             }
             catch (Exception ex)
@@ -234,12 +326,15 @@ namespace MathBoardHome
             {
                 case "exit":
                     _allowClose = true;
+                    _home?.Hide();
+                    Taskbar.Restore();
                     ExitCode = Program.ExitCodeSupervisor;
                     Close();
                     break;
                 case "reload":
                     _config = AppConfig.Load();
                     ApplyBounds();
+                    ApplyShell();
                     SendConfig();
                     break;
                 case "edit":
@@ -298,6 +393,7 @@ namespace MathBoardHome
                 _usbDebounce.Dispose();
                 _usbPoll.Dispose();
                 _adminTimeout.Dispose();
+                _windowsPoll.Dispose();
             }
             base.Dispose(disposing);
         }
