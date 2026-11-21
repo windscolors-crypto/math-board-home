@@ -1,0 +1,98 @@
+{
+  "_note": "ملف إعدادات واجهة اللوح. عدّليه بالمفكرة ثم اختاري «إعادة تحميل الإعدادات» من قائمة المشرفة. لا تحذفي الفواصل ولا علامات التنصيص.",
+
+  "title": "غرفة الرياضيات",
+  "adminPin": "2468",
+  "coverTaskbar": false,
+  "usbAutoOpen": true,
+  "digits": "arab",
+  "searchUrl": "https://www.google.com/search?q=",
+
+  "apps": [
+    {
+      "id": "board",
+      "name": "السبورة",
+      "hint": "برنامج اللوح التفاعلي",
+      "type": "run",
+      "hero": true,
+      "targets": ["__BOARD_PROGRAM__"],
+      "missing": "لم يُضبط مسار برنامج السبورة بعد. أبلغي مشرفة الغرفة."
+    },
+    {
+      "id": "powerpoint",
+      "name": "باوربوينت",
+      "icon": "presentation",
+      "color": "#C8462A",
+      "type": "run",
+      "targets": [
+        "powerpnt.exe",
+        "%ProgramFiles%\\Microsoft Office\\root\\Office16\\POWERPNT.EXE",
+        "%ProgramFiles(x86)%\\Microsoft Office\\root\\Office16\\POWERPNT.EXE"
+      ]
+    },
+    {
+      "id": "usb",
+      "name": "الفلاشة والملفات",
+      "icon": "usb",
+      "color": "#F2B630",
+      "ink": "#2A2208",
+      "type": "usb"
+    },
+    {
+      "id": "downloads",
+      "name": "التنزيلات",
+      "icon": "download",
+      "color": "#2F86C9",
+      "type": "run",
+      "targets": [{ "path": "explorer.exe", "args": "shell:Downloads" }]
+    },
+    {
+      "id": "browser",
+      "name": "الإنترنت",
+      "icon": "globe",
+      "color": "#178C7E",
+      "type": "run",
+      "targets": ["chrome.exe", "msedge.exe", "https://www.google.com"]
+    },
+    {
+      "id": "teams",
+      "name": "تيمز",
+      "icon": "users",
+      "color": "#5B5FC7",
+      "type": "run",
+      "targets": [
+        "ms-teams:",
+        "msteams:",
+        { "path": "%LOCALAPPDATA%\\Microsoft\\Teams\\Update.exe", "args": "--processStart \"Teams.exe\"" }
+      ]
+    },
+    {
+      "id": "games",
+      "name": "الألعاب التعليمية",
+      "icon": "games",
+      "color": "#D9546F",
+      "type": "group",
+      "_note": "أمثلة مؤقتة. استبدليها بالمواقع التي تستخدمها المعلمات.",
+      "items": [
+        { "id": "geogebra", "name": "جيوجبرا", "type": "url", "url": "https://www.geogebra.org/classic?lang=ar" },
+        { "id": "desmos", "name": "ديسموس", "type": "url", "url": "https://www.desmos.com/calculator?lang=ar" },
+        { "id": "wordwall", "name": "ووردوول", "type": "url", "url": "https://wordwall.net/ar" }
+      ]
+    },
+    {
+      "id": "keyboard",
+      "name": "لوحة المفاتيح",
+      "icon": "keyboard",
+      "color": "#5E7487",
+      "type": "keyboard"
+    },
+    {
+      "id": "calibrate",
+      "name": "ضبط اللمس",
+      "icon": "target",
+      "color": "#7D62B8",
+      "type": "run",
+      "targets": ["__CALIBRATE_PROGRAM__", "%SystemRoot%\\System32\\tabcal.exe"]
+    }
+  ]
+}

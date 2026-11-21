@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>الرئيسية</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="home" id="home">
+
+    <header class="top">
+      <div class="clock" id="clock" aria-label="الساعة">
+        <span class="clock-time" id="clockTime">--:--</span>
+        <span class="clock-period" id="clockPeriod"></span>
+        <span class="hold-meter" id="holdMeter" aria-hidden="true"></span>
+      </div>
+      <div class="dates">
+        <p class="date-main" id="dateGreg"></p>
+        <p class="date-sub" id="dateHijri"></p>
+      </div>
+    </header>
+
+    <form class="search" id="searchForm" role="search" autocomplete="off">
+      <span class="search-icon" data-icon="search" aria-hidden="true"></span>
+      <input id="searchInput" type="search" inputmode="search" enterkeyhint="search"
+             placeholder="ابحثي عن برنامج أو موقع" aria-label="بحث">
+      <button type="button" class="search-clear" id="searchClear" hidden aria-label="مسح البحث">
+        <span data-icon="x" aria-hidden="true"></span>
+      </button>
+      <button type="submit" class="search-web" id="searchWeb" hidden>ابحثي في الإنترنت</button>
+      <button type="button" class="search-kbd" id="searchKbd" aria-label="إظهار لوحة المفاتيح">
+        <span data-icon="keyboard" aria-hidden="true"></span>
+      </button>
+    </form>
+
+    <main class="grid" id="grid" aria-label="البرامج"></main>
+    <p class="empty" id="empty" hidden>لا يوجد برنامج بهذا الاسم. اضغطي «ابحثي في الإنترنت» للبحث عنه في جوجل.</p>
+
+    <footer class="bottom">
+      <div class="usb" id="usbBar" hidden>
+        <span class="usb-dot" data-icon="usb" aria-hidden="true"></span>
+        <span class="usb-text" id="usbText"></span>
+        <button type="button" class="usb-open" id="usbOpen">افتحي الفلاشة</button>
+      </div>
+      <p class="room" id="roomTitle"></p>
+    </footer>
+  </div>
+
+  <!-- Games and other grouped links -->
+  <div class="layer" id="groupLayer" hidden>
+    <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="groupTitle">
+      <div class="sheet-head">
+        <button type="button" class="back" data-close aria-label="رجوع">
+          <span data-icon="back" aria-hidden="true"></span><span>رجوع</span>
+        </button>
+        <h2 id="groupTitle"></h2>
+      </div>
+      <div class="sheet-grid" id="groupGrid"></div>
+    </section>
+  </div>
+
+  <!-- Supervisor PIN -->
+  <div class="layer" id="pinLayer" hidden>
+    <section class="dialog pin" role="dialog" aria-modal="true" aria-labelledby="pinTitle">
+      <h2 id="pinTitle">رمز المشرفة</h2>
+      <div class="pin-dots" id="pinDots" aria-live="polite"></div>
+      <p class="pin-msg" id="pinMsg"></p>
+      <div class="keypad" id="keypad"></div>
+    </section>
+  </div>
+
+  <!-- Supervisor menu -->
+  <div class="layer" id="adminLayer" hidden>
+    <section class="dialog admin" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
+      <h2 id="adminTitle">قائمة المشرفة</h2>
+      <div class="admin-actions">
+        <button type="button" class="admin-btn" data-admin="exit">الخروج إلى سطح المكتب</button>
+        <button type="button" class="admin-btn" data-admin="edit">تعديل ملف الإعدادات</button>
+        <button type="button" class="admin-btn" data-admin="reload">إعادة تحميل الإعدادات</button>
+        <button type="button" class="admin-btn" data-admin="folder">فتح مجلد البرنامج</button>
+        <button type="button" class="admin-btn quiet" data-close>رجوع إلى الرئيسية</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

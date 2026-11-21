@@ -1,0 +1,47 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build
+        run: dotnet build src/MathBoardHome/MathBoardHome.csproj -c Release -nologo
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $out = 'dist/MathBoardHome'
+          New-Item -ItemType Directory -Force "$out/app", "$out/installer" | Out-Null
+          Copy-Item src/MathBoardHome/bin/Release/* "$out/app" -Recurse
+          Get-ChildItem "$out/app" -Filter *.pdb | Remove-Item
+          Copy-Item installer/*.ps1 "$out/installer"
+          Copy-Item installer/install.bat, installer/uninstall.bat, installer/steps-ar.txt $out
+          Compress-Archive -Path $out -DestinationPath dist/MathBoardHome.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MathBoardHome
+          path: dist/MathBoardHome.zip
+
+      - name: Publish release
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: MathBoardHome 1.0.${{ github.run_number }}
+          files: dist/MathBoardHome.zip
+          make_latest: true

@@ -1,0 +1,5 @@
+* text=auto
+# Windows scripts are stored with CRLF and must not be converted.
+*.bat -text
+*.ps1 -text
+*.txt -text
