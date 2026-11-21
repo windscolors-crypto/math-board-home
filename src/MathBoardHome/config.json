@@ -7,6 +7,8 @@
   "usbAutoOpen": true,
   "digits": "arab",
   "searchUrl": "https://www.google.com/search?q=",
+  "wallpaper": "",
+  "_wallpaper_note": "لتغيير الخلفية: ضعي صورة (jpg) داخل مجلد wwwroot واكتبي اسمها هنا، مثل \"my-photo.jpg\". اتركيها فارغة للخلفية الأصلية.",
 
   "apps": [
     {
@@ -67,17 +69,29 @@
       ]
     },
     {
-      "id": "games",
-      "name": "الألعاب التعليمية",
+      "id": "geogebra",
+      "name": "جيوجبرا",
       "icon": "games",
       "color": "#D9546F",
-      "type": "group",
-      "_note": "أمثلة مؤقتة. استبدليها بالمواقع التي تستخدمها المعلمات.",
-      "items": [
-        { "id": "geogebra", "name": "جيوجبرا", "type": "url", "url": "https://www.geogebra.org/classic?lang=ar" },
-        { "id": "desmos", "name": "ديسموس", "type": "url", "url": "https://www.desmos.com/calculator?lang=ar" },
-        { "id": "wordwall", "name": "ووردوول", "type": "url", "url": "https://wordwall.net/ar" }
-      ]
+      "type": "url",
+      "url": "https://www.geogebra.org/classic?lang=ar",
+      "_note": "الألعاب والمواقع التعليمية: كل موقع زر مستقل يفتح بلمسة. هذه أمثلة مؤقتة، استبدليها بمواقع المعلمات."
+    },
+    {
+      "id": "desmos",
+      "name": "ديسموس",
+      "icon": "games",
+      "color": "#E07B39",
+      "type": "url",
+      "url": "https://www.desmos.com/calculator?lang=ar"
+    },
+    {
+      "id": "wordwall",
+      "name": "ووردوول",
+      "icon": "games",
+      "color": "#B0478F",
+      "type": "url",
+      "url": "https://wordwall.net/ar"
     },
     {
       "id": "keyboard",

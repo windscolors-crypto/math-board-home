@@ -23,19 +23,12 @@
       if (!el.firstChild) el.innerHTML = ICONS[el.dataset.icon] || ICONS.globe;
     });
 
-  // Chalk drawing for the board tile: a compass construction of an equilateral triangle.
-  const HERO_ART = `
-    <svg class="hero-art" viewBox="40 20 460 260" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-      <g transform="translate(70 40)">
-        <circle class="chalk faint draw" style="--len:820" cx="150" cy="200" r="130"/>
-        <circle class="chalk faint draw d2" style="--len:820" cx="280" cy="200" r="130"/>
-        <path class="chalk draw d2" style="--len:400" d="M150 200 L280 200 L215 87.4 Z"/>
-        <circle cx="150" cy="200" r="5" fill="currentColor"/>
-        <circle cx="280" cy="200" r="5" fill="currentColor"/>
-        <circle cx="215" cy="87.4" r="5" fill="currentColor"/>
-        <text x="120" y="232">أ</text><text x="292" y="232">ب</text><text x="205" y="68">ج</text>
-        <path class="chalk faint draw d3" style="--len:140" d="M196 200 a 46 46 0 0 0 -23 -40"/>
-      </g>
+  // The board icon: a compass construction of an equilateral triangle, drawn in chalk.
+  const HERO_GLYPH = `
+    <svg class="hero-glyph" viewBox="0 0 100 100" aria-hidden="true">
+      <path class="chalk faint" d="M22 80 H78"/>
+      <path class="chalk draw" style="--len:140" d="M30 70 L70 70 L50 35.4 Z"/>
+      <circle cx="30" cy="70" r="3.4"/><circle cx="70" cy="70" r="3.4"/><circle cx="50" cy="35.4" r="3.4"/>
     </svg>`;
 
   // ---------------------------------------------------------------- bridge to the native window
@@ -65,35 +58,40 @@
   function tile(app, { inGroup = false, parent = null } = {}) {
     const b = document.createElement("button");
     b.type = "button";
-    b.className = "tile";
+    b.className = "app";
     b.dataset.id = app.id;
     b.dataset.search = `${app.name || ""} ${app.hint || ""} ${(app.keywords || []).join(" ")}`.toLowerCase();
+    const hero = app.hero && !inGroup;
+    if (hero) b.classList.add("hero");
 
-    if (app.hero && !inGroup) {
-      b.classList.add("hero");
-      b.innerHTML = `${HERO_ART}<span class="hero-name"></span><span class="hero-hint"></span>`;
-      b.querySelector(".hero-name").textContent = app.name || "";
-      b.querySelector(".hero-hint").textContent = app.hint || "";
+    const icon = document.createElement("span");
+    icon.className = "icon";
+    const color = app.color || (parent && parent.color);
+    if (color) icon.style.setProperty("--c", color);
+    if (app.ink) icon.style.setProperty("--ink", app.ink);
+    if (app.image) {
+      const img = document.createElement("img");
+      img.src = app.image;
+      img.alt = "";
+      icon.appendChild(img);
+    } else if (hero) {
+      icon.innerHTML = HERO_GLYPH;
     } else {
-      const chip = document.createElement("span");
-      chip.className = "chip";
-      const color = app.color || (parent && parent.color);
-      if (color) chip.style.setProperty("--chip", color);
-      if (app.ink) chip.style.setProperty("--chip-ink", app.ink);
-      if (app.image) {
-        const img = document.createElement("img");
-        img.src = app.image;
-        img.alt = "";
-        chip.appendChild(img);
-      } else {
-        const ic = document.createElement("span");
-        ic.dataset.icon = app.icon || (inGroup ? "globe" : "hand");
-        chip.appendChild(ic);
-      }
-      const name = document.createElement("span");
-      name.className = "tile-name";
-      name.textContent = app.name || "";
-      b.append(chip, name);
+      const ic = document.createElement("span");
+      ic.className = "glyph";
+      ic.dataset.icon = app.icon || (inGroup ? "globe" : "hand");
+      icon.appendChild(ic);
+    }
+
+    const label = document.createElement("span");
+    label.className = "label";
+    label.textContent = app.name || "";
+    b.append(icon, label);
+    if (hero && app.hint) {
+      const hint = document.createElement("span");
+      hint.className = "hint";
+      hint.textContent = app.hint;
+      b.appendChild(hint);
     }
 
     b.addEventListener("click", () => activate(app));
@@ -106,6 +104,7 @@
     (config.apps || []).forEach((app) => grid.appendChild(tile(app)));
     paintIcons(grid);
     $("roomTitle").textContent = config.title || "";
+    if (config.wallpaper) document.body.style.setProperty("--wall", `url("${String(config.wallpaper).replace(/"/g, "")}")`);
     applyFilter();
   }
 
