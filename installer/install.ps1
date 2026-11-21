@@ -123,7 +123,7 @@ $text = [IO.File]::ReadAllText($Config)
 # ------------------------------------------------------------------ board program
 if ($text.Contains('"__BOARD_PROGRAM__"')) {
     Step 'Board program (the big green button)'
-    $board = Choose-Program 'board program' '(?i)board|calboard|whiteboard|white board|smart|flow|easi|note|teach|class|pen|ink|سبور|لوح'
+    $board = Choose-Program 'board program' '(?i)board|calboard|kalboard|whiteboard|white board|smart|flow|easi|note|teach|class|pen|ink|سبور|لوح'
     if ($board) {
         $text = $text.Replace('"__BOARD_PROGRAM__"', (Json-Target $board))
         Say "Board program: $($board.Path)" Green
@@ -137,7 +137,7 @@ if ($text.Contains('"__CALIBRATE_PROGRAM__"')) {
     Step 'Touch calibration'
     Say 'If the board came with its own calibration tool, pick it. Otherwise press Enter'
     Say 'and the button will open the Windows calibration (tabcal).'
-    $cal = Choose-Program 'calibration tool' '(?i)calib|calboard|align|orient|معايرة'
+    $cal = Choose-Program 'calibration tool' '(?i)calib|calboard|kalboard|align|orient|معايرة'
     if ($cal) {
         $text = $text.Replace('"__CALIBRATE_PROGRAM__"', (Json-Target $cal))
         Say "Calibration tool: $($cal.Path)" Green
