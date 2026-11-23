@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>السبورة</title>
+  <link rel="stylesheet" href="board.css">
+</head>
+<body>
+  <div class="stage" id="stage">
+    <canvas id="bg"></canvas>
+    <canvas id="ink"></canvas>
+    <canvas id="live"></canvas>
+    <div class="tools-layer" id="toolsLayer"></div>
+    <div class="selection" id="selection" hidden>
+      <div class="sel-box" id="selBox"><span class="sel-handle" id="selHandle"></span></div>
+      <div class="sel-actions" id="selActions">
+        <button type="button" data-sel="copy">نسخ</button>
+        <button type="button" data-sel="front">للأمام</button>
+        <button type="button" data-sel="back">للخلف</button>
+        <button type="button" data-sel="delete" class="danger">حذف</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom toolbar: same order as the Whiteboard app on the new KALBOARD screen
+       (menu and pages on the left, drawing tools in the middle, home on the right). -->
+  <nav class="bar" dir="ltr" aria-label="أدوات السبورة">
+    <div class="bar-group">
+      <button type="button" class="tb" data-pop="menu"><span data-i="menu"></span><b>القائمة</b></button>
+      <div class="pages">
+        <button type="button" class="pg" id="pgPrev" aria-label="الصفحة السابقة"><span data-i="chevL"></span></button>
+        <span class="pg-num" id="pgNum">1 / 1</span>
+        <button type="button" class="pg" id="pgNext" aria-label="الصفحة التالية"><span data-i="chevR"></span></button>
+        <button type="button" class="pg add" id="pgAdd" aria-label="صفحة جديدة"><span data-i="plus"></span></button>
+      </div>
+      <button type="button" class="tb" data-pop="split"><span data-i="split"></span><b>تقسيم</b></button>
+    </div>
+
+    <div class="bar-group main">
+      <button type="button" class="tb" data-tool="pen" data-pop="pen"><span data-i="pen"></span><b>قلم</b></button>
+      <button type="button" class="tb" data-tool="eraser" data-pop="eraser"><span data-i="eraser"></span><b>ممحاة</b></button>
+      <button type="button" class="tb" data-tool="select"><span data-i="select"></span><b>تحديد</b></button>
+      <button type="button" class="tb" data-tool="shape" data-pop="shape"><span data-i="shape"></span><b>أشكال</b></button>
+      <button type="button" class="tb" data-pop="toolbox"><span data-i="toolbox"></span><b>أدوات</b></button>
+      <button type="button" class="tb" id="undo"><span data-i="undo"></span><b>تراجع</b></button>
+      <button type="button" class="tb" id="redo"><span data-i="redo"></span><b>إعادة</b></button>
+    </div>
+
+    <div class="bar-group">
+      <button type="button" class="tb" id="kbd"><span data-i="keyboard"></span><b>لوحة المفاتيح</b></button>
+      <button type="button" class="tb home" id="home"><span data-i="home"></span><b>الرئيسية</b></button>
+    </div>
+  </nav>
+
+  <!-- Popovers -->
+  <div class="pop" id="pop-pen" hidden>
+    <div class="seg" id="penKinds">
+      <button type="button" data-kind="pen">قلم</button>
+      <button type="button" data-kind="marker">ماركر</button>
+      <button type="button" data-kind="highlighter">تظليل</button>
+    </div>
+    <label class="row">السُّمك <input type="range" id="penSize" min="1" max="24" value="4"></label>
+    <div class="swatches" id="penColors"></div>
+    <canvas class="preview" id="penPreview" width="300" height="44"></canvas>
+  </div>
+
+  <div class="pop" id="pop-eraser" hidden>
+    <label class="row">حجم الممحاة <input type="range" id="eraserSize" min="10" max="120" value="40"></label>
+    <button type="button" class="wide danger" id="clearPage">مسح الصفحة كلها</button>
+  </div>
+
+  <div class="pop wide-pop" id="pop-shape" hidden>
+    <div class="shapes" id="shapeGrid"></div>
+    <label class="row">السُّمك <input type="range" id="shapeSize" min="1" max="16" value="4"></label>
+    <div class="swatches" id="shapeColors"></div>
+    <label class="check"><input type="checkbox" id="shapeFill"> تعبئة الشكل باللون</label>
+  </div>
+
+  <div class="pop wide-pop" id="pop-toolbox" hidden>
+    <div class="boxgrid">
+      <button type="button" data-box="image"><span data-i="image"></span>صورة</button>
+      <button type="button" data-box="ruler"><span data-i="ruler"></span>مسطرة</button>
+      <button type="button" data-box="set45"><span data-i="set45"></span>مثلث ٤٥°</button>
+      <button type="button" data-box="set30"><span data-i="set30"></span>مثلث ٣٠°-٦٠°</button>
+      <button type="button" data-box="protractor"><span data-i="protractor"></span>منقلة</button>
+      <button type="button" data-box="compass"><span data-i="compass"></span>فرجار</button>
+    </div>
+  </div>
+
+  <div class="pop" id="pop-menu" hidden>
+    <div class="menu">
+      <button type="button" data-menu="new"><span data-i="file"></span>لوح جديد</button>
+      <button type="button" data-menu="open"><span data-i="open"></span>فتح لوح محفوظ</button>
+      <button type="button" data-menu="save"><span data-i="save"></span>حفظ</button>
+      <button type="button" data-menu="background"><span data-i="grid"></span>الخلفية</button>
+      <button type="button" data-menu="exit"><span data-i="home"></span>الخروج إلى الرئيسية</button>
+    </div>
+  </div>
+
+  <div class="pop" id="pop-split" hidden>
+    <div class="menu">
+      <button type="button" data-split="2"><span data-i="split"></span>قسمان</button>
+      <button type="button" data-split="3"><span data-i="split3"></span>ثلاثة أقسام</button>
+    </div>
+  </div>
+
+  <!-- Dialogs -->
+  <div class="layer" id="dlgSave" hidden>
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="saveTitle">
+      <h2 id="saveTitle">حفظ اللوح</h2>
+      <label class="field">اسم اللوح
+        <span class="field-row">
+          <input id="saveName" type="text" autocomplete="off">
+          <button type="button" class="icon-btn" data-kbd aria-label="لوحة المفاتيح"><span data-i="keyboard"></span></button>
+        </span>
+      </label>
+      <div class="seg wide-seg" id="saveWhere">
+        <button type="button" data-where="local" class="on">على الجهاز</button>
+        <button type="button" data-where="usb">على الفلاشة</button>
+      </div>
+      <div class="dlg-actions">
+        <button type="button" class="primary" id="saveGo">حفظ</button>
+        <button type="button" data-close>إلغاء</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="layer" id="dlgOpen" hidden>
+    <section class="dialog big" role="dialog" aria-modal="true" aria-labelledby="openTitle">
+      <h2 id="openTitle">فتح لوح محفوظ</h2>
+      <div class="list" id="openList"></div>
+      <div class="dlg-actions"><button type="button" data-close>إغلاق</button></div>
+    </section>
+  </div>
+
+  <div class="layer" id="dlgImages" hidden>
+    <section class="dialog big" role="dialog" aria-modal="true" aria-labelledby="imgTitle">
+      <h2 id="imgTitle">إدراج صورة</h2>
+      <p class="hint" id="imgHint">الصور من الفلاشة أولاً، ثم من الصور والتنزيلات وسطح المكتب.</p>
+      <div class="thumbs" id="imgList"></div>
+      <div class="dlg-actions"><button type="button" data-close>إغلاق</button></div>
+    </section>
+  </div>
+
+  <div class="layer" id="dlgBg" hidden>
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="bgTitle">
+      <h2 id="bgTitle">الخلفية</h2>
+      <p class="sub">اللون</p>
+      <div class="swatches big" id="bgColors"></div>
+      <p class="sub">التخطيط</p>
+      <div class="grids" id="bgGrids"></div>
+      <div class="dlg-actions"><button type="button" class="primary" data-close>تم</button></div>
+    </section>
+  </div>
+
+  <div class="layer" id="dlgConfirm" hidden>
+    <section class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="confirmText">
+      <h2 id="confirmText"></h2>
+      <div class="dlg-actions">
+        <button type="button" class="primary danger" id="confirmYes"></button>
+        <button type="button" data-close>إلغاء</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Split-screen writing: each part has its own pen -->
+  <div class="split" id="split" hidden></div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="board.js"></script>
+</body>
+</html>

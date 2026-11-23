@@ -19,11 +19,9 @@
     {
       "id": "board",
       "name": "السبورة",
-      "hint": "برنامج اللوح التفاعلي",
-      "type": "run",
-      "hero": true,
-      "targets": ["__BOARD_PROGRAM__"],
-      "missing": "لم يُضبط مسار برنامج السبورة بعد. أبلغي مشرفة الغرفة."
+      "hint": "مسطرة وفرجار ومنقلة",
+      "type": "whiteboard",
+      "hero": true
     },
     {
       "id": "powerpoint",
@@ -99,11 +97,14 @@
       "url": "https://wordwall.net/ar"
     },
     {
-      "id": "keyboard",
-      "name": "لوحة المفاتيح",
-      "icon": "keyboard",
-      "color": "#5E7487",
-      "type": "keyboard"
+      "id": "kalboard",
+      "name": "KALBOARD",
+      "icon": "presentation",
+      "color": "#2C6E8F",
+      "type": "run",
+      "keywords": ["كال بورد", "برنامج اللوح القديم"],
+      "targets": ["__BOARD_PROGRAM__"],
+      "missing": "لم يُضبط مسار برنامج KALBOARD بعد. أبلغي مشرفة الغرفة."
     },
     {
       "id": "calibrate",

@@ -37,7 +37,34 @@ if (Test-Path $Config) {
 }
 New-Item -ItemType Directory -Force -Path $Dest | Out-Null
 Copy-Item -Path (Join-Path $Source '*') -Destination $Dest -Recurse -Force
-if ($savedConfig) { [IO.File]::WriteAllText($Config, $savedConfig, $Utf8NoBom) }
+if ($savedConfig -and $savedConfig.Contains('"whiteboard"')) {
+    [IO.File]::WriteAllText($Config, $savedConfig, $Utf8NoBom)
+}
+elseif ($savedConfig) {
+    # Settings from a version without the built-in board: start from the new file and carry
+    # over the KALBOARD path, the calibration tool and the supervisor PIN.
+    Say 'Updating the settings file to the new layout (your choices are kept).'
+    try {
+        $old = $savedConfig | ConvertFrom-Json
+        $text = [IO.File]::ReadAllText($Config)
+        $oldBoard = @($old.apps | Where-Object { $_.id -eq 'board' })[0]
+        if ($oldBoard -and $oldBoard.targets) {
+            $first = @($oldBoard.targets)[0]
+            if ($first -and "$first" -ne '__BOARD_PROGRAM__') { $text = $text.Replace('"__BOARD_PROGRAM__"', ($first | ConvertTo-Json -Compress)) }
+        }
+        $oldCal = @($old.apps | Where-Object { $_.id -eq 'calibrate' })[0]
+        if ($oldCal -and $oldCal.targets) {
+            $first = @($oldCal.targets)[0]
+            if ($first -and "$first" -ne '__CALIBRATE_PROGRAM__' -and "$first" -notmatch 'tabcal') { $text = $text.Replace('"__CALIBRATE_PROGRAM__"', ($first | ConvertTo-Json -Compress)) }
+        }
+        if ($old.adminPin -match '^\d{4,8}$') {
+            $text = [regex]::Replace($text, '"adminPin"\s*:\s*"\d*"', '"adminPin": "' + $old.adminPin + '"')
+        }
+        [IO.File]::WriteAllText($Config, $text, $Utf8NoBom)
+    } catch {
+        Say "Could not read the old settings ($($_.Exception.Message)); the questions below will set them again." Yellow
+    }
+}
 Get-ChildItem $Dest -Recurse -File | Unblock-File
 Say "Installed to $Dest" Green
 
@@ -122,7 +149,7 @@ $text = [IO.File]::ReadAllText($Config)
 
 # ------------------------------------------------------------------ board program
 if ($text.Contains('"__BOARD_PROGRAM__"')) {
-    Step 'Board program (the big green button)'
+    Step 'KALBOARD program (its own button; the big green button opens the built-in board)'
     $board = Choose-Program 'board program' '(?i)board|calboard|kalboard|whiteboard|white board|smart|flow|easi|note|teach|class|pen|ink|سبور|لوح'
     if ($board) {
         $text = $text.Replace('"__BOARD_PROGRAM__"', (Json-Target $board))

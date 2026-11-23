@@ -112,6 +112,7 @@
   function activate(app) {
     resetIdle();
     if (app.type === "group") return openGroup(app);
+    if (app.type === "whiteboard") { location.href = "board.html"; return; }
     if (!host) return toast(`(معاينة) فتح «${app.name}»`);
     pending.set(app.id, app);
     if (app.type !== "keyboard") toast(`جارٍ فتح «${app.name}»`);

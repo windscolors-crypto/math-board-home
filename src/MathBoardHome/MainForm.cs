@@ -258,6 +258,7 @@ namespace MathBoardHome
                     case "lock": _adminUnlocked = false; _adminTimeout.Stop(); break;
                     case "admin": Admin(AppConfig.Str(msg, "action")); break;
                     case "windows": SendWindows(force: true); break;
+                    case "board": Board(msg); break;
                     case "switch":
                         {
                             IntPtr h = KnownWindow(AppConfig.Str(msg, "id"));
@@ -350,6 +351,35 @@ namespace MathBoardHome
                     Launcher.OpenFolder(AppDomain.CurrentDomain.BaseDirectory);
                     break;
             }
+        }
+
+        // ---------------------------------------------------------------- whiteboard files
+
+        /// <summary>Requests from board.html; every answer carries the request's id back.</summary>
+        private void Board(Dictionary<string, object> msg)
+        {
+            string reqId = AppConfig.Str(msg, "reqId");
+            object result;
+            try
+            {
+                switch (AppConfig.Str(msg, "op"))
+                {
+                    case "save": result = BoardStorage.Save(AppConfig.Str(msg, "name"), AppConfig.Str(msg, "data"), AppConfig.Str(msg, "where")); break;
+                    case "list": result = BoardStorage.List(); break;
+                    case "load": result = BoardStorage.Load(AppConfig.Str(msg, "path")); break;
+                    case "autosave": result = BoardStorage.Autosave(AppConfig.Str(msg, "data")); break;
+                    case "restore": result = BoardStorage.Restore(); break;
+                    case "images": result = BoardStorage.Images(); break;
+                    case "image": result = BoardStorage.Image(AppConfig.Str(msg, "path")); break;
+                    default: result = new { ok = false, error = "unknown" }; break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Write("Board request failed", ex);
+                result = new { ok = false, error = "failed" };
+            }
+            Send(new { type = "reply", reqId, result });
         }
 
         // ---------------------------------------------------------------- USB

@@ -13,7 +13,7 @@ namespace MathBoardHome
     /// </summary>
     internal sealed class AppConfig
     {
-        public static readonly JavaScriptSerializer Json = new JavaScriptSerializer { MaxJsonLength = 8 * 1024 * 1024 };
+        public static readonly JavaScriptSerializer Json = new JavaScriptSerializer { MaxJsonLength = int.MaxValue, RecursionLimit = 64 };
 
         public Dictionary<string, object> Root { get; private set; } = new Dictionary<string, object>();
         public string LoadError { get; private set; }
